@@ -11,9 +11,9 @@ def index(request):
     return render(request, 'index.html')
 
 
-class UserModelForm(forms.ModelForm):
-    class Meta
-        model = models.Userinfo
-        fields = [""]
+# class UserModelForm(forms.ModelForm):
+#     class Meta
+#         model = models.Userinfo
+#         fields = [""]
 def inscription(request):
     return render(request, "inscription.html")
