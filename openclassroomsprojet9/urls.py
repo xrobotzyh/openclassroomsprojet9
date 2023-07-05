@@ -20,6 +20,8 @@ from LiteReview import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('index/', views.index),
+    path('login/', views.login),
     path('inscription/', views.inscription),
+    path('logout/', views.logout),
+    path('create_ticket/', views.create_ticket)
 ]
