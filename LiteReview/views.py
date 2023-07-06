@@ -106,7 +106,7 @@ def logout(request):
 class CreateTicketModelForm(forms.ModelForm):
     class Meta:
         model = models.Ticket
-        fields = ["title", "description"]
+        fields = ["title", "description", "image"]
         widgets = {
             "title": forms.TextInput(
                 attrs={"class": "form-control", "label": "Description"},
@@ -114,16 +114,16 @@ class CreateTicketModelForm(forms.ModelForm):
             "description": forms.Textarea(
                 attrs={"class": "form-control"},
             ),
-            # "image": forms.ImageField(
-            #     attrs={"class": "form-control form-control-Sm"}
-            # ),
+            "image": forms.FileInput(
+                attrs={"class": "form-control form-control-Sm"}
+            ),
         }
 
 
 def create_ticket(request):
     form = CreateTicketModelForm()
     if request.method == "POST":
-        form = CreateTicketModelForm(data=request.POST)
+        form = CreateTicketModelForm(data=request.POST, files=request.FILES)
         if form.is_valid():
             form.save()
             return redirect('/login/')

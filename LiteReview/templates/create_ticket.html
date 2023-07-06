@@ -62,7 +62,7 @@
     </div>
 </nav>
 <h3 class="mt-md-5 text-center">Créer un ticket</h3>
-<form class="mt-md-5" method="post">
+<form class="mt-md-5" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="mb-3 col-md-8 m-auto">
         <label for="exampleFormControlInput1" class="form-label">Titre</label>
