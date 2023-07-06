@@ -12,7 +12,7 @@ from LiteReview.templates.encrypt import md5
 # Create your views here.
 class auth_middleware(MiddlewareMixin):
     def process_request(self, request):
-        if request.path_info == '/login/' or '/inscription':
+        if request.path_info == '/login/' or request.path_info == '/inscription/':
             return
         status_login = request.session.get("info")
         if status_login:
@@ -41,7 +41,7 @@ def login(request):
             user_object = models.User.objects.filter(**form.cleaned_data).first()
             if user_object:
                 request.session["info"] = {"id": user_object.id, "username": user_object.username}
-                return HttpResponse('登陆成功')
+                return HttpResponse('Connexion réussie')
             else:
                 form.add_error("password", "Le nom d'utilisateur ou le mot de passe n'est pas correct")
 
