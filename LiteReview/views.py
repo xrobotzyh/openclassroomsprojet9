@@ -5,6 +5,7 @@ from django import forms
 from django.utils.deprecation import MiddlewareMixin
 
 from LiteReview import models
+from LiteReview.models import User
 from LiteReview.templates.encrypt import md5
 
 
@@ -41,7 +42,7 @@ def login(request):
             user_object = models.User.objects.filter(**form.cleaned_data).first()
             if user_object:
                 request.session["info"] = {"id": user_object.id, "username": user_object.username}
-                return HttpResponse('Connexion réussie')
+                return redirect('/dashboard/')
             else:
                 form.add_error("password", "Le nom d'utilisateur ou le mot de passe n'est pas correct")
 
@@ -109,7 +110,7 @@ class CreateTicketModelForm(forms.ModelForm):
         fields = ["title", "description", "image"]
         widgets = {
             "title": forms.TextInput(
-                attrs={"class": "form-control", "label": "Description"},
+                attrs={"class": "form-control"},
             ),
             "description": forms.Textarea(
                 attrs={"class": "form-control"},
@@ -122,9 +123,59 @@ class CreateTicketModelForm(forms.ModelForm):
 
 def create_ticket(request):
     form = CreateTicketModelForm()
+
     if request.method == "POST":
         form = CreateTicketModelForm(data=request.POST, files=request.FILES)
         if form.is_valid():
-            form.save()
-            return redirect('/login/')
+            ticket = form.save(commit=False)
+            user = User.objects.get(username=request.session.get("info")["username"])
+            ticket.user = user
+            ticket.save()
+            return redirect('/dashboard/')
     return render(request, 'create_ticket.html', {"form": form})
+
+
+def dashboard(request):
+    return render(request, 'dashboard.html')
+
+
+class ReviewModelForm(forms.ModelForm):
+    choices = [(0, '-0'), (1, '-1'), (2, '-2'), (3, '-3'), (4, '-4'), (5, '-5')]
+    rating = forms.ChoiceField(choices=choices,
+                               widget=forms.RadioSelect(attrs={"class": "form-check form-check-inline"}))
+
+    class Meta:
+        model = models.Review
+        fields = ["rating", "headline", "body"]
+        widgets = {
+            "headline": forms.TextInput(
+                attrs={"class": "form-control"},
+            ),
+            "body": forms.Textarea(
+                attrs={"class": "form-control"},
+            ),
+        }
+
+
+def critique(request):
+    if request.method == "POST":
+        form_review = ReviewModelForm(data=request.POST)
+        form_ticket = CreateTicketModelForm(data=request.POST, files=request.FILES)
+
+        if form_review.is_valid() and form_ticket.is_valid():
+            ticket = form_ticket.save(commit=False)
+            ticket.user = User.objects.get(username=request.session.get("info")["username"])
+            ticket.save()
+            review = form_review.save(commit=False)
+            review.user = User.objects.get(username=request.session.get("info")["username"])
+            review.ticket = ticket
+            review.save()
+
+    form_review = ReviewModelForm()
+    form_ticket = CreateTicketModelForm()
+
+    context = {
+        "review": form_review,
+        "ticket": form_ticket
+    }
+    return render(request, 'critique.html', context)
