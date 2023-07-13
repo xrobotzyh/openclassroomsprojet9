@@ -1,12 +1,12 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, redirect
 from django import forms
 from django.utils.deprecation import MiddlewareMixin
 
 from LiteReview import models
-from LiteReview.models import User
-from LiteReview.templates.encrypt import md5
+from LiteReview.models import User, Ticket
+from LiteReview.encrypt import md5
 
 
 # def clean_
@@ -179,3 +179,22 @@ def critique(request):
         "ticket": form_ticket
     }
     return render(request, 'critique.html', context)
+
+
+def modifier_ticket(request, nid=10):
+    obj = Ticket.objects.get(id=nid)
+    data = CreateTicketModelForm(instance=obj)
+
+    if request.method == "POST":
+        ticket = CreateTicketModelForm(data=request.POST, files=request.FILES, instance=obj)
+        if ticket.is_valid():
+            ticket.user = User.objects.get(username=request.session.get("info")["username"])
+            ticket.save()
+            return redirect('/dashboard/')
+
+    return render(request, "modifier_ticket.html", {"form": data})
+
+
+def followers(request):
+    # return render(request, "followers.html", {"followers": followers})
+    return render(request, "followers.html")
