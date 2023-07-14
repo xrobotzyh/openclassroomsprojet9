@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django import forms
 from django.utils.deprecation import MiddlewareMixin
@@ -34,7 +35,7 @@ class LoginModelForm(forms.Form):
         return pwd
 
 
-def login(request):
+def index(request):
     form = LoginModelForm()
     if request.method == "POST":
         form = LoginModelForm(data=request.POST)
@@ -196,15 +197,36 @@ def modifier_ticket(request, nid=10):
 
 
 def followers(request):
-    search_data = request.GET.get("query")
-    if search_data:
-        username = User.objects.filter(id=search_data).first()
-        if username:
-            if request.method == "POST":
-                followed_user = username
-                user = request.user
-                UserFollows.objects.create(user=user, followed_user=followed_user)
-                return redirect('/followers/')
+    if request.method == "GET":
+        search_data = request.GET.get("query")
+        user_followers = UserFollows.objects.values_list('followed_user_id')
+        for user_follower in user_followers:
+            print(user_follower)
+        if search_data:
+            username_found = User.objects.filter(username__icontains=search_data)
+            if username_found:
+                if user_followers:
+                    return render(request, "followers.html",
+                                  {"usernames_found": username_found, "show_table_username_found": True,
+                                   "user_followers": user_followers, "show_table_user_followers": True})
+                else:
+                    return render(request, "followers.html",
+                                  {"usernames_found": username_found, "show_table_username_found": True,
+                                   "show_table_user_followers": False})
+        if user_followers:
+            return render(request, "followers.html", {"user_followers": user_followers, "show_table_user_followers": True})
 
-            return render(request, "followers.html", {"form": username, "show_table": True})
-    return render(request, "followers.html", {"show_table": False})
+    return render(request, "followers.html", {"show_table_user_name_found": False, "show_table_user_followers": False})
+
+
+def add_follower(request):
+    nid = request.GET.get('nid')
+    user_id = request.session.get('info')['id']
+    UserFollows.objects.create(user_id=user_id, followed_user_id=nid)
+    return redirect('/followers/')
+
+
+def delete_follower(request):
+    nid = request.GET.get('nid')
+    UserFollows.objects.filter(id=nid).delete()
+    return redirect('/followers/')

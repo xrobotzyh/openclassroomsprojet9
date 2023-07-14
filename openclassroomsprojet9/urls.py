@@ -24,13 +24,16 @@ from LiteReview import views
 urlpatterns = [
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}, name='media'),
     path('admin/', admin.site.urls),
-    path('login/', views.login),
+    # path('login/', views.index),
     path('inscription/', views.inscription),
     path('logout/', views.logout),
     path('create_ticket/', views.create_ticket),
     path('dashboard/', views.dashboard),
     path('critique/', views.critique),
     path('<int:nid>/modifier_ticket/', views.modifier_ticket),
-    path('followers/',views.followers)
+    path('followers/', views.followers),
+    path('', views.index),
+    path('addfollower/', views.add_follower),
+    path('deletefollower',views.delete_follower)
 
 ]

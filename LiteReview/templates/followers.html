@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create_ticket</title>
+    <title>Onglet d'abonnements</title>
     <link rel="stylesheet" href="{% static 'plugins/bootstrap-5.1.3-dist/css/bootstrap.min.css' %}">
     <style>
         .btn-custom-outline {
@@ -67,25 +67,44 @@
         <button class="btn btn-outline-success" type="submit">Envoyer</button>
     </form>
 </section>
-{% if show_table %}
+{% if show_table_username_found %}
 <section>
     <div class="col-md-7 mt-5 mx-auto">
         <table class="table table-bordered">
             <tbody>
-                <tr>
-                    <td>{{ form }}</td>
-                    <td>
-                        <form method="post" action="/followers/">
-                            {% csrf_token %}
-                            <input type="hidden" name="query" value="{{ form.id }}">
-                            <button class="btn btn-outline-success btn-sm" type="submit">Suivre</button>
-                        </form>
-                    </td>
-                </tr>
+                {% for username in usernames_found %}
+                    <tr>
+                        <td>{{ username }}</td>
+                        <td>
+                            <a class="btn btn-outline-success btn-sm" href="/addfollower/?nid={{ username.id }}">Suivre</a>
+                        </td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
+{% endif %}
 </section>
+<section>
+    <h3 class="mt-md-5 text-center">Abonnements</h3>
+</section>
+<section>
+    {% if show_table %}
+<section>
+    <div class="col-md-7 mt-5 mx-auto">
+        <table class="table table-bordered">
+            <tbody>
+                {% for user_follower in user_followers %}
+                    <tr>
+                        <td>{{ user_follower.id }}</td>
+                        <td>
+                            <a class="btn btn-outline-success btn-sm" href="/addfollower/?nid={{ user_follower }}">Suivre</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endif %}
 {#<section>#}
 {#    <div class="col-md-7 mt-5 mx-auto">#}
