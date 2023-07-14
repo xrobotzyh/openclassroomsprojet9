@@ -62,24 +62,45 @@
     </div>
 </nav>
 <section>
-    <form class="d-flex col-md-7 mt-5 mx-auto" role="search">
-        <input class="form-control me-2" type="search" placeholder="Nom d'utilisateur" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Search</button>
+    <form class="d-flex col-md-7 mt-5 mx-auto" role="search" method="get">
+        <input class="form-control me-2" type="search" placeholder="Nom d'utilisateur" aria-label="Envoyer" name="query">
+        <button class="btn btn-outline-success" type="submit">Envoyer</button>
     </form>
 </section>
+{% if show_table %}
 <section>
     <div class="col-md-7 mt-5 mx-auto">
         <table class="table table-bordered">
-            <tboady>
-                {% for follower in followers %}
-                    <tr>
-                        <td>{{ follower }}</td>>
-                    </tr>
-                {% endfor %}
-
-            </tboady>
+            <tbody>
+                <tr>
+                    <td>{{ form }}</td>
+                    <td>
+                        <form method="post" action="/followers/">
+                            {% csrf_token %}
+                            <input type="hidden" name="query" value="{{ form.id }}">
+                            <button class="btn btn-outline-success btn-sm" type="submit">Suivre</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
         </table>
     </div>
+</section>
+{% endif %}
+{#<section>#}
+{#    <div class="col-md-7 mt-5 mx-auto">#}
+{#        <table class="table table-bordered">#}
+{#            <tboady>#}
+{#                {% for followers in followers %}#}
+{#                    <tr>#}
+{#                        <td>{{ follower }}</td>>#}
+{#                    </tr>#}
+{#                {% endfor %}#}
+{##}
+{#            </tboady>#}
+{#        </table>#}
+{#    </div>#}
+{#</section>#}
 
 
 

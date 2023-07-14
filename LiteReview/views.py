@@ -5,7 +5,7 @@ from django import forms
 from django.utils.deprecation import MiddlewareMixin
 
 from LiteReview import models
-from LiteReview.models import User, Ticket
+from LiteReview.models import User, Ticket, UserFollows
 from LiteReview.encrypt import md5
 
 
@@ -196,5 +196,15 @@ def modifier_ticket(request, nid=10):
 
 
 def followers(request):
-    # return render(request, "followers.html", {"followers": followers})
-    return render(request, "followers.html")
+    search_data = request.GET.get("query")
+    if search_data:
+        username = User.objects.filter(id=search_data).first()
+        if username:
+            if request.method == "POST":
+                followed_user = username
+                user = request.user
+                UserFollows.objects.create(user=user, followed_user=followed_user)
+                return redirect('/followers/')
+
+            return render(request, "followers.html", {"form": username, "show_table": True})
+    return render(request, "followers.html", {"show_table": False})
