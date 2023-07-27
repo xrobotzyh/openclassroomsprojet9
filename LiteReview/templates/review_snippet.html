@@ -1,0 +1,35 @@
+<div class="col-md-7 mx-auto review " style="border-style: solid;border-width: thin;">
+    <div class="p-5">
+        {% block content %}
+        {% if post.user.username == request.session.info.username %}
+            <p>Vous avez publié une critique:</p>
+        {% else %}
+            <p>{{ post.user.username }} a publié une critique:</p>
+        {% endif %}
+        <p style="text-align: end">{{ post.time_created }}</p>
+        <h4>{{ post.headline }} -
+            {% for i in ""|center:post.rating %}
+                <img src="/media/img/star-fill.svg" height="24px" width="24px" class="mb-2">
+            {% endfor %}
+        </h4>
+        <p>{{ post.body }}</p>
+        <div class="col-md-11 mx-auto mb-2 ticket " style="border-style: solid;border-width: thin;">
+            <div class="p-3">
+                <p>Ticket - {{ post.ticket.user.username }}</p>
+                <p>{{ post.ticket.title }}</p>
+                <p>{{ post.ticket.description }}</p>
+                {% if post.ticket.image %}
+                    <img src="/media/{{ post.ticket.image }}" alt="Ticket Image" height="300px" class="mb-2">
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="offset-md-9 mt-3 mb-2">
+            <a class="btn btn-custom-outline me-lg-3" href="/{{ post.id }}/modifier_critique/" role="button">Modifier</a>
+            <a class="btn btn-custom-outline" href="/deletereview/?nid={{ post.id }}" role="button">Supprimer</a>
+        </div>
+        {% endblock %}
+    </div>
+</div>
+
+

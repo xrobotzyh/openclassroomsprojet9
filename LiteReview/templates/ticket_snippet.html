@@ -1,0 +1,21 @@
+<div class="col-md-7 mx-auto ticket " style="border-style: solid;border-width: thin;">
+    <div class="p-5">
+        {% block content %}
+          {% if post.user.username == request.session.info.username %}
+            <p>Vous avez publié un ticket:</p>
+        {% else %}
+            <p>{{ post.user.username }} a publié un ticket:</p>
+        {% endif %}
+        <h2>{{ post.title }}</h2>
+        <p style="text-align: end">{{ post.time_created }}</p>
+        <p>{{ post.description }}</p>
+        {% if post.image %}
+            <img src="/media/{{ post.image }}" alt="Ticket Image" height="300px" class="mb-2">
+        {% endif %}
+        <div class="offset-md-9 mt-3 mb-2">
+            <a class="btn btn-custom-outline me-lg-3" href="/{{ post.id }}/modifier_ticket/" role="button">Modifier</a>
+            <a class="btn btn-custom-outline" href="/deletepost/?nid={{ post.id }}" role="button">Supprimer</a>
+        </div>
+        {% endblock %}
+    </div>
+</div>

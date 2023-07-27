@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+{% block title %}posts{% endblock %}
+{% block content %}
+    {% for post in posts %}
+        {% if post.content_type == 'TICKET' %}
+            {% include 'ticket_snippet.html' %}
+        {% elif post.content_type == 'REVIEW' %}
+            {% include 'review_snippet.html' %}
+        {% endif %}
+    {% endfor %}
+    <div class="mb-5">
+    </div>
+{% endblock %}

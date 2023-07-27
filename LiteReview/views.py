@@ -1,12 +1,16 @@
+from itertools import chain
+
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django import forms
 from django.utils.deprecation import MiddlewareMixin
+from django.contrib import messages
+from django.db.models import CharField, Value
 
 from LiteReview import models
-from LiteReview.models import User, Ticket, UserFollows
+from LiteReview.models import User, Ticket, UserFollows, Review
 from LiteReview.encrypt import md5
 
 
@@ -14,13 +18,13 @@ from LiteReview.encrypt import md5
 # Create your views here.
 class auth_middleware(MiddlewareMixin):
     def process_request(self, request):
-        if request.path_info == '/login/' or request.path_info == '/inscription/':
+        if request.path_info == '/index/' or request.path_info == '/inscription/':
             return
         status_login = request.session.get("info")
         if status_login:
             return
         else:
-            return redirect('/login/')
+            return redirect('/index/')
 
 
 class LoginModelForm(forms.Form):
@@ -43,7 +47,7 @@ def index(request):
             user_object = models.User.objects.filter(**form.cleaned_data).first()
             if user_object:
                 request.session["info"] = {"id": user_object.id, "username": user_object.username}
-                return redirect('/dashboard/')
+                return redirect('/feed/')
             else:
                 form.add_error("password", "Le nom d'utilisateur ou le mot de passe n'est pas correct")
 
@@ -95,14 +99,14 @@ def inscription(request):
         form = UserModelForm(data=request.POST)
         if form.is_valid():
             form.save()
-            return redirect('/login/')
+            return redirect('/index/')
         else:
             return render(request, "inscription.html", {"form": form})
 
 
 def logout(request):
     request.session.clear()
-    return redirect('/login/')
+    return redirect('/index/')
 
 
 class CreateTicketModelForm(forms.ModelForm):
@@ -182,7 +186,7 @@ def critique(request):
     return render(request, 'critique.html', context)
 
 
-def modifier_ticket(request, nid=10):
+def modifier_ticket(request, nid):
     obj = Ticket.objects.get(id=nid)
     data = CreateTicketModelForm(instance=obj)
 
@@ -196,25 +200,45 @@ def modifier_ticket(request, nid=10):
     return render(request, "modifier_ticket.html", {"form": data})
 
 
+# todo 验证user_id和session id,如果是同一个人可以进行更改
+
+
 def followers(request):
     if request.method == "GET":
         search_data = request.GET.get("query")
-        user_followers = UserFollows.objects.values_list('followed_user_id')
-        for user_follower in user_followers:
-            print(user_follower)
+        user = User.objects.get(username=request.session.get("info")["username"])
+        user_followers = user.following.all()
+        users_followed_by = user.followed_by.all()
         if search_data:
             username_found = User.objects.filter(username__icontains=search_data)
             if username_found:
                 if user_followers:
-                    return render(request, "followers.html",
-                                  {"usernames_found": username_found, "show_table_username_found": True,
-                                   "user_followers": user_followers, "show_table_user_followers": True})
+                    if users_followed_by:
+                        return render(request, "followers.html",
+                                      {"usernames_found": username_found, "show_table_username_found": True,
+                                       "user_followers": user_followers, "show_table_user_followers": True,
+                                       "users_followed_by": users_followed_by, "show_table_user_followed_by": True})
+                    else:
+                        return render(request, "followers.html",
+                                      {"usernames_found": username_found, "show_table_username_found": True,
+                                       "user_followers": user_followers, "show_table_user_followers": True,
+                                       "show_table_user_followed_by": False})
                 else:
                     return render(request, "followers.html",
                                   {"usernames_found": username_found, "show_table_username_found": True,
-                                   "show_table_user_followers": False})
+                                   "show_table_user_followers": False, "show_table_user_followed_by": False})
+            else:
+                messages.warning(request, 'Utilisateur non trouvé, Veuillez faire une nouvelle recherche')
+                return redirect('/followers/')
         if user_followers:
-            return render(request, "followers.html", {"user_followers": user_followers, "show_table_user_followers": True})
+            if users_followed_by:
+                return render(request, "followers.html",
+                              {"user_followers": user_followers, "show_table_user_followers": True,
+                               "users_followed_by": users_followed_by, "show_table_user_followed_by": True})
+            else:
+                return render(request, "followers.html",
+                              {"user_followers": user_followers, "show_table_user_followers": True,
+                               "show_table_user_followed_by": False})
 
     return render(request, "followers.html", {"show_table_user_name_found": False, "show_table_user_followers": False})
 
@@ -230,3 +254,126 @@ def delete_follower(request):
     nid = request.GET.get('nid')
     UserFollows.objects.filter(id=nid).delete()
     return redirect('/followers/')
+
+
+def get_users_viewable_tickets(user):
+    ticket_objects = []
+    user_followers = user.following.all()
+    for user_follower in user_followers:
+        tickets_object = Ticket.objects.filter(user_id=user_follower.followed_user_id).all()
+        for ticket in tickets_object:
+            ticket_objects.append(ticket)
+    return ticket_objects
+
+
+def get_users_viewable_reviews(user):
+    review_object = []
+    user_followers = user.following.all()
+    ticket_objects = get_users_viewable_tickets(user)
+
+    for ticket_object in ticket_objects:
+        reviews_object = Review.objects.filter(ticket_id=ticket_object.id).all()
+        for review in reviews_object:
+            review_object.append(review)
+
+    for user_follower in user_followers:
+        review_objects = Review.objects.filter(user_id=user_follower.followed_user_id).all()
+        for review in review_objects:
+            if review not in review_object:
+                review_object.append(review)
+    return review_object
+
+
+def feed(request):
+    flux_reviews = []
+    flux_tickets = []
+    reviews = get_users_viewable_reviews(User.objects.get(username=request.session.get("info")["username"]))
+    user = User.objects.get(username=request.session.get("info")["username"])
+    reviews_user_connect = Review.objects.filter(user_id=user.id)
+    # returns queryset of reviews
+    for review in reviews:
+        if review:
+            review.content_type = 'REVIEW'
+            flux_reviews.append(review)
+    for review_user_connect in reviews_user_connect:
+        if review_user_connect:
+            review_user_connect.content_type = 'REVIEW'
+            flux_reviews.append(review_user_connect)
+
+    tickets = get_users_viewable_tickets(User.objects.get(username=request.session.get("info")["username"]))
+    tickets_user_connect = Ticket.objects.filter(user_id=user.id)
+    # returns queryset of tickets
+    for ticket in tickets:
+        if ticket:
+            ticket.content_type = 'TICKET'
+            flux_tickets.append(ticket)
+    for ticket_user_connect in tickets_user_connect:
+        if ticket_user_connect:
+            ticket_user_connect.content_type = 'TICKET'
+            flux_tickets.append(ticket_user_connect)
+    # combine and sort the two types of posts
+    posts = sorted(chain(flux_reviews, flux_tickets), key=lambda post: post.time_created, reverse=True)
+    return render(request, 'feed.html', context={'posts': posts})
+
+
+def user_posts(request):
+    flux_reviews = []
+    flux_tickets = []
+    user = User.objects.get(username=request.session.get("info")["username"])
+    tickets = Ticket.objects.filter(user_id=user.id)
+    for ticket in tickets:
+        if ticket:
+            ticket.content_type = 'TICKET'
+            flux_tickets.append(ticket)
+    reviews = Review.objects.filter(user_id=user.id)
+    for review in reviews:
+        if review:
+            review.content_type = "REVIEW"
+            flux_reviews.append(review)
+    posts = sorted(chain(flux_reviews, flux_tickets), key=lambda post: post.time_created, reverse=True)
+
+    return render(request, 'posts.html', context={'posts': posts})
+
+
+def delete_post(request):
+    nid = request.GET.get('nid')
+    Ticket.objects.filter(id=nid).delete()
+    return redirect('/posts/')
+
+
+def edit_review(request, nid):
+    obj = Review.objects.get(id=nid)
+    obj_modelform = ReviewModelForm(instance=obj)
+    print(obj.user.username)
+
+    if request.method == "POST":
+        review = ReviewModelForm(data=request.POST, files=request.FILES, instance=obj)
+        if review.is_valid():
+            review.user = User.objects.get(username=request.session.get("info")["username"])
+            review.save()
+            return redirect('/dashboard/')
+
+    return render(request, "modifier_critique.html", {"form": obj, "review_model_form": obj_modelform})
+
+
+def delete_review(request):
+    nid = request.GET.get('nid')
+    Review.objects.filter(id=nid).delete()
+    return redirect('/posts/')
+
+
+def reply_ticket(request, nid):
+    ticket_obj = Ticket.objects.filter(id=nid).first()
+    review_model_form = ReviewModelForm()
+
+    if request.method == "POST":
+        review_form = ReviewModelForm(data=request.POST)
+
+        if review_form.is_valid():
+            review = review_form.save(commit=False)
+            review.user = User.objects.get(username=request.session.get("info")["username"])
+            review.ticket = ticket_obj
+            review.save()
+        return redirect('/feed/')
+
+    return render(request, 'reply_ticket.html', {"form": ticket_obj, "review_model_form": review_model_form})

@@ -1,0 +1,17 @@
+{% extends 'ticket_snippet.html' %}
+{% block content %}
+     {% if post.user.username == request.session.info.username %}
+            <p>Vous avez demandé une critique:</p>
+        {% else %}
+            <p>{{ post.user.username }} a demandé une critique:</p>
+        {% endif %}
+        <h2>{{ post.title }}</h2>
+        <p style="text-align: end">{{ post.time_created }}</p>
+        <p>{{ post.description }}</p>
+        {% if post.image %}
+            <img src="/media/{{ post.image }}" alt="Ticket Image" height="300px" class="mb-2">
+        {% endif %}
+    <div class="offset-md-9 mt-3 mb-2">
+            <a class="btn btn-lg btn-custom-outline" href="/{{ post.id }}/reply_ticket/" role="button">Créer une critique</a>
+    </div>
+{% endblock %}

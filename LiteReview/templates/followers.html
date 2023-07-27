@@ -1,127 +1,84 @@
-{% load static %}
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Onglet d'abonnements</title>
-    <link rel="stylesheet" href="{% static 'plugins/bootstrap-5.1.3-dist/css/bootstrap.min.css' %}">
-    <style>
-        .btn-custom-outline {
-            background-color: transparent;
-            color: #517b7b;
-            border-color: #517b7b;
-            text-decoration: none;
-        }
-        .btn-custom-outline:hover{
-            color: #fff;
-            background-color: #517b7b;
-            border-color: #517b7b;
-        }
-         .form-floating {
-            position: relative;
-        }
-
-        .form-floating label {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-    </style>
-</head>
-<body>
-<nav class="navbar navbar-expand-lg bg-body-tertiary" style="background-color:#517b7b">
-    <div class="container-fluid text-center">
-            <span class="navbar-text mx-auto" style="color:white">
-                LiteReview
-            </span>
-    </div>
-    <div class="collapse navbar-collapse col-md-3" id="navbarNavDropdown">
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#" style="color:white">Flux</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" style="color:white">Posts</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" style="color:white">Abonnements</a>
-            </li>
-            <li class="nav-item dropdown mx-5">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                   aria-expanded="false" style="color:white">
-                    {{ request.session.info.username }}
-                </a>
-                <ul class="dropdown-menu m-lg-auto">
-                    <li><a class="dropdown-item " href="#">Mon compte</a></li>
-                    <li><a class="dropdown-item" href="/logout/">Se déconnecté</a></li>
-                </ul>
-            </li>
-        </ul>
-    </div>
-</nav>
-<section>
-    <form class="d-flex col-md-7 mt-5 mx-auto" role="search" method="get">
-        <input class="form-control me-2" type="search" placeholder="Nom d'utilisateur" aria-label="Envoyer" name="query">
-        <button class="btn btn-outline-success" type="submit">Envoyer</button>
-    </form>
-</section>
-{% if show_table_username_found %}
-<section>
-    <div class="col-md-7 mt-5 mx-auto">
-        <table class="table table-bordered">
-            <tbody>
-                {% for username in usernames_found %}
-                    <tr>
-                        <td>{{ username }}</td>
-                        <td>
-                            <a class="btn btn-outline-success btn-sm" href="/addfollower/?nid={{ username.id }}">Suivre</a>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-{% endif %}
-</section>
-<section>
-    <h3 class="mt-md-5 text-center">Abonnements</h3>
-</section>
-<section>
-    {% if show_table %}
-<section>
-    <div class="col-md-7 mt-5 mx-auto">
-        <table class="table table-bordered">
-            <tbody>
+{% extends 'layout.html' %}
+{% block title %}followers{% endblock %}
+{% block content %}
+    <section>
+        <form class="d-flex col-md-7 mt-5 mx-auto" role="search" method="get">
+            <input class="form-control me-2" type="search" placeholder="Nom d'utilisateur" aria-label="Envoyer"
+                   name="query">
+            <button class="btn btn-custom-outline" type="submit">Envoyer</button>
+        </form>
+    </section>
+    <section>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-warning alert-dismissible fade show col-md-7 mt-5 mx-auto" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% if show_table_username_found %}
+            <div class="col-md-7 mt-5 mx-auto">
+                <table class="table table-bordered">
+                    <tbody>
+                    {% for username in usernames_found %}
+                        <tr>
+                            <td>{{ username }}</td>
+                            <td>
+                                <div class="d-flex justify-content-center">
+                                    <a class="btn btn-custom-outline btn-sm" href="/addfollower/?nid={{ username.id }}">Suivre</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </section>
+    <section>
+        <h3 class="mt-md-5 text-center">Abonnements</h3>
+    </section>
+    <section>
+    {% if show_table_user_followers %}
+        <section>
+        <div class="col-md-7 mt-5 mx-auto">
+            <table class="table table-bordered">
+                <tbody>
                 {% for user_follower in user_followers %}
                     <tr>
-                        <td>{{ user_follower.id }}</td>
+                        <td>{{ user_follower.followed_user }}</td>
                         <td>
-                            <a class="btn btn-outline-success btn-sm" href="/addfollower/?nid={{ user_follower }}">Suivre</a>
+                            <div class="d-flex justify-content-center">
+                            <a class="btn btn-custom-outline btn-sm"
+                               href="/deletefollower/?nid={{ user_follower.id }}">Désabonner</a>
+                            </div>
                         </td>
                     </tr>
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
-{% endif %}
-{#<section>#}
-{#    <div class="col-md-7 mt-5 mx-auto">#}
-{#        <table class="table table-bordered">#}
-{#            <tboady>#}
-{#                {% for followers in followers %}#}
-{#                    <tr>#}
-{#                        <td>{{ follower }}</td>>#}
-{#                    </tr>#}
-{#                {% endfor %}#}
-{##}
-{#            </tboady>#}
-{#        </table>#}
-{#    </div>#}
-{#</section>#}
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+    </section>
+    <section>
+        <h3 class="mt-md-5 text-center">Abonné</h3>
+    </section>
+    <section>
+    {% if show_table_user_followed_by %}
+        <section>
+        <div class="col-md-7 mt-5 mx-auto">
+            <table class="table table-bordered">
+                <tbody>
+                {% for user_followed_by in users_followed_by %}
+                    <tr>
+                        <div class="d-flex justify-content-center">
+                            <td>{{ user_followed_by.user.username }}</td>
+                        </div>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+    </section>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+{% block title %}Flux{% endblock %}
+{% block content %}
+    <div class="offset-4 mt-3 mb-5">
+            <a class="btn btn-lg btn-custom-outline me-lg-3" href="/create_ticket/" role="button">Demander une critique </a>
+            <a class="btn btn-lg btn-custom-outline" href="/critique/" role="button">Créer une critique</a>
+    </div>
+    {% for post in posts %}
+        {% if post.content_type == 'TICKET' %}
+        {% include 'tickets_flux_snippet.html' %}
+        {% elif post.content_type == 'REVIEW' %}
+        {% include 'review_flux_snippet.html' %}
+        {% endif %}
+    {% endfor %}
+    <div class="mb-5">
+    </div>
+{% endblock %}

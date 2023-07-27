@@ -33,7 +33,13 @@ urlpatterns = [
     path('<int:nid>/modifier_ticket/', views.modifier_ticket),
     path('followers/', views.followers),
     path('', views.index),
+    path('index/', views.index),
     path('addfollower/', views.add_follower),
-    path('deletefollower',views.delete_follower)
-
+    path('deletefollower/', views.delete_follower),
+    path('feed/', views.feed),
+    path('posts/', views.user_posts),
+    path('deletepost/', views.delete_post),
+    path('<int:nid>/edit_review/', views.edit_review),
+    path('deletereview/', views.delete_review),
+    path('<int:nid>/reply_ticket/', views.reply_ticket)
 ]
