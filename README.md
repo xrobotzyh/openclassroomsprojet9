@@ -114,7 +114,7 @@ Access the site on your browser using the URL http://127.0.0.1:8000/
 ## Test
 Use the following information to test
 ```bash
-| User name             | password   
+| User name             | password      |
 |-----------------------|---------------|
 | test-didi             | 123456789     | 
 | test2-lulu            | 123456789     | 
