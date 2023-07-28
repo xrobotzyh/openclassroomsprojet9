@@ -19,27 +19,37 @@ from django.contrib import admin
 from django.urls import path, re_path
 from django.views.static import serve
 
-from LiteReview import views
+from LiteReview.views import inscription, signout, login, feed, follower, posts, review, ticket
 
 urlpatterns = [
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}, name='media'),
     path('admin/', admin.site.urls),
     # path('login/', views.index),
-    path('inscription/', views.inscription),
-    path('logout/', views.logout),
-    path('create_ticket/', views.create_ticket),
-    path('dashboard/', views.dashboard),
-    path('critique/', views.critique),
-    path('<int:nid>/modifier_ticket/', views.modifier_ticket),
-    path('followers/', views.followers),
-    path('', views.index),
-    path('index/', views.index),
-    path('addfollower/', views.add_follower),
-    path('deletefollower/', views.delete_follower),
-    path('feed/', views.feed),
-    path('posts/', views.user_posts),
-    path('deletepost/', views.delete_post),
-    path('<int:nid>/edit_review/', views.edit_review),
-    path('deletereview/', views.delete_review),
-    path('<int:nid>/reply_ticket/', views.reply_ticket)
+    path('inscription/', inscription.inscription),
+    path('logout/', signout.logout),
+
+    path('', login.index),
+    path('index/', login.index),
+
+    # suivi
+    path('followers/', follower.followers),
+    path('addfollower/', follower.add_follower),
+    path('deletefollower/', follower.delete_follower),
+
+    # flux
+    path('feed/', feed.feed),
+
+    # posts
+    path('posts/', posts.user_posts),
+    path('deletepost/', posts.delete_post),
+
+    # critique
+    path('critique/', review.critique),
+    path('<int:nid>/edit_review/', review.edit_review),
+    path('deletereview/', review.delete_review),
+
+    # ticket
+    path('<int:nid>/modifier_ticket/', ticket.modifier_ticket),
+    path('create_ticket/', ticket.create_ticket),
+    path('<int:nid>/reply_ticket/', ticket.reply_ticket)
 ]

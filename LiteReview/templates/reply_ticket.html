@@ -1,45 +1,54 @@
 {% extends 'layout.html' %}
 {% block content %}
-<h3 class="mt-md-5 text-center">Créer une critique</h3>
-<div class="col-md-9 mx-auto mt-5" style="border-style: solid;border-width: thin;">
-    <div class="p-3">
-        <p>Vous êtes en train de poster en réponse à</p>
-        <div class="col-md-10 mx-auto mb-2 " style="border-style: solid;border-width: thin;">
-            <div class="p-3">
-                <p>{{ form.user.username }} a demandé une critique</p>
-                <p style="text-align: end">{{ form.time_created }}</p>
-                <p>{{ form.title }}</p>
-                <p>Je suis à la recherche d'un avis sur ce sujet, svp, merci</p>
-                {% if form.image %}
-                    <img src="/media/{{ form.image }}" alt="Ticket Image" height="300px" class="mb-2">
-                {% endif %}
+    <h3 class="mt-md-5 text-center">Créer une critique</h3>
+    <div class="col-md-9 mx-auto mt-5" style="border-style: solid;border-width: thin;">
+        <div class="p-3">
+            <p>Vous êtes en train de poster en réponse à</p>
+            <div class="col-md-10 mx-auto mb-2 " style="border-style: solid;border-width: thin;">
+                <div class="p-3">
+                    <p>{{ form.user.username }} a demandé une critique</p>
+                    <p style="text-align: end">{{ form.time_created }}</p>
+                    <p>{{ form.title }}</p>
+                    <p>Je suis à la recherche d'un avis sur ce sujet, svp, merci</p>
+                    {% if form.image %}
+                        <img src="/media/{{ form.image }}" alt="Ticket Image" height="300px" class="mb-2">
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
-</div>
-<form class="mx-auto" method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="col-md-9 mx-auto " style="border-style: solid;border-width: thin;">
-        <p class="p-3">Critique</p>
-        <div class="mb-3 col-md-10 m-auto mt-5">
-            <label for="exampleFormControlInput1" class="form-label">Titre</label>
-            {{ review_model_form.headline }}
+    <form class="mx-auto" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="col-md-9 mx-auto " style="border-style: solid;border-width: thin;">
+            <p class="p-3">Critique</p>
+            <div class="mb-3 col-md-10 m-auto mt-5">
+                <label for="exampleFormControlInput1" class="form-label">Titre</label>
+                {{ review_model_form.headline }}
+            </div>
+            <div class="mb-3 col-md-10 m-auto">
+                {% for choice in review_model_form.rating %}
+                    <div class="form-check form-check-inline">
+                        {{ choice.tag }}
+                        {{ choice.choice_label }}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="mb-3 col-md-10 m-auto">
+                {{ review_model_form.body.label }}
+                {{ review_model_form.body }}
+            </div>
+            <div>
+                <button type="submit" class="btn btn-custom-outline mt-1 offset-md-9 mb-5">Envoyer</button>
+            </div>
         </div>
-        <div class="mb-3 col-md-10 m-auto">
-            {% for choice in review_model_form.rating %}
-                <div class="form-check form-check-inline">
-                    {{ choice.tag }}
-                    {{ choice.choice_label }}
+    </form>
+    <section>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-warning alert-dismissible fade show col-md-7 mt-5 mx-auto" role="alert">
+                    {{ message }}
                 </div>
             {% endfor %}
-        </div>
-        <div class="mb-3 col-md-10 m-auto">
-            {{ review_model_form.body.label }}
-            {{ review_model_form.body }}
-        </div>
-        <div>
-            <button type="submit" class="btn btn-custom-outline mt-1 offset-md-9 mb-5">Envoyer</button>
-        </div>
-    </div>
-</form>
+        {% endif %}
+    </section>
 {% endblock %}

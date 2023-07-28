@@ -22,6 +22,7 @@
     {% else %}
         <p>{{ post.user.username }} posted a review:</p>
         <p style="text-align: end">{{ post.time_created }}</p>
+        {# make post.rating's time loop to display the rating star icon #}
         <h4>{{ post.headline }} -
             {% for i in ""|center:post.rating %}
                 <img src="/media/img/star-fill.svg" height="24px" width="24px" class="mb-2">

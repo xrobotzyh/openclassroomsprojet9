@@ -12,6 +12,7 @@
                  <div class="col-md-6 offset-md-3 text-center align-self-center mt-2 form-floating">
                     {{ field }}
                      <label for="{{ field.id_for_label }}" class="form-floating">{{ field.label }}</label>
+                     {# there might have sevral errors,give the first error message #}
                      <span style="color:red">{{ field.errors.0 }}</span>
                  </div>
             {% endfor %}

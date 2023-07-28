@@ -46,7 +46,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'LiteReview.views.auth_middleware'
+    'LiteReview.views.login.auth_middleware'
 ]
 
 ROOT_URLCONF = 'openclassroomsprojet9.urls'
