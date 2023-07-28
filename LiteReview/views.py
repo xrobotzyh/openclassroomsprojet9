@@ -279,8 +279,7 @@ def get_users_viewable_reviews(user):
     for user_follower in user_followers:
         review_objects = Review.objects.filter(user_id=user_follower.followed_user_id).all()
         for review in review_objects:
-            if review not in review_object:
-                review_object.append(review)
+            review_object.append(review)
     return review_object
 
 
@@ -295,10 +294,6 @@ def feed(request):
         if review:
             review.content_type = 'REVIEW'
             flux_reviews.append(review)
-    for review_user_connect in reviews_user_connect:
-        if review_user_connect:
-            review_user_connect.content_type = 'REVIEW'
-            flux_reviews.append(review_user_connect)
 
     tickets = get_users_viewable_tickets(User.objects.get(username=request.session.get("info")["username"]))
     tickets_user_connect = Ticket.objects.filter(user_id=user.id)
